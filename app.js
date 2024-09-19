@@ -6,8 +6,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import methodOverride from "method-override";
 import ejsMate from "ejs-mate";
+import { wrapAsync } from "./utils/wrapAsync.js";
 
-// Convert the file URL to a file path
+// Convert file URL to a file path
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -67,15 +68,14 @@ app.get("/listings/:id", async (req, res) => {
 });
 
 // Create route
-app.post("/listings", async (req, res, next) => {
-  try {
+app.post(
+  "/listings",
+  wrapAsync(async (req, res, next) => {
     const newListing = new Listing(req.body.listing);
     await newListing.save();
     res.redirect("/listings");
-  } catch (err) {
-    next(err);
-  }
-});
+  })
+);
 
 //Edit Route
 app.get("/listings/:id/edit", async (req, res) => {
@@ -100,8 +100,8 @@ app.delete("/listings/:id", async (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  res.send("Something went wrong...")
-})
+  res.send("Something went wrong...");
+});
 
 app.listen(port, () => {
   console.log(`Server is listening on ${port}`);
