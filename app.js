@@ -5,7 +5,7 @@ import Listing from "./model/listing.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import methodOverride from "method-override";
-import ejsMate from "ejs-mate"
+import ejsMate from "ejs-mate";
 
 // Convert the file URL to a file path
 const __filename = fileURLToPath(import.meta.url);
@@ -18,8 +18,8 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
-app.engine("ejs", ejsMate)
-app.use(express.static(path.join(__dirname, "/public")))
+app.engine("ejs", ejsMate);
+app.use(express.static(path.join(__dirname, "/public")));
 
 dotenv.config();
 
@@ -67,10 +67,14 @@ app.get("/listings/:id", async (req, res) => {
 });
 
 // Create route
-app.post("/listings", async (req, res) => {
-  const newListing = new Listing(req.body.listing);
-  await newListing.save();
-  res.redirect("/listings");
+app.post("/listings", async (req, res, next) => {
+  try {
+    const newListing = new Listing(req.body.listing);
+    await newListing.save();
+    res.redirect("/listings");
+  } catch (err) {
+    next(err);
+  }
 });
 
 //Edit Route
@@ -95,11 +99,13 @@ app.delete("/listings/:id", async (req, res) => {
   res.redirect("/listings");
 });
 
+app.use((err, req, res, next) => {
+  res.send("Something went wrong...")
+})
+
 app.listen(port, () => {
   console.log(`Server is listening on ${port}`);
 });
-
-
 
 // Test listing route
 // app.get("/testListing", async (req, res) => {
